@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs;
 using OrderManagement.Application.Interfaces;
+using OrderManagement.DTOs;
 
 namespace OrderManagement.Api.Controllers
 {
@@ -40,5 +41,19 @@ namespace OrderManagement.Api.Controllers
             var order = await _service.UpdateOrderStatusAsync(id, dto);
             return order == null ? NotFound() : Ok(order);
         }
+
+        [HttpGet("summary")]
+        public async Task<ActionResult<List<OrderSummaryDto>>> GetSummary([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+        {
+            var request = new OrderSummaryRequestDto
+            {
+                FromDate = fromDate,
+                ToDate = toDate
+            };
+
+            var summary = await _service.GetSummaryAsync(request);
+            return Ok(summary);
+        }
+
     }
 }

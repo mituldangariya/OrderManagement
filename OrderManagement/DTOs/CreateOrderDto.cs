@@ -8,6 +8,10 @@ namespace OrderManagement.Application.DTOs
         [Required] public string CustomerName { get; set; } = string.Empty;
         public string? Notes { get; set; }
         public List<CreateOrderItemDto> Items { get; set; } = new();
+
+        // Add fields for history
+        public string ChangedBy { get; set; } = "system"; // default
+        public string Reason { get; set; } = "Order created"; // default
     }
 
     public class CreateOrderItemDto

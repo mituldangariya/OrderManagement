@@ -1,10 +1,22 @@
+using FluentValidation.AspNetCore;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OrderManagement.Application.Interfaces;
 using OrderManagement.Application.Services;
+using OrderManagement.DTOs.Validators;
 using OrderManagement.Infrastructure.Persistence;
 using OrderManagement.Infrastructure.Repositories;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using OrderManagement.DTOs.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+builder.Services.AddControllers();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderDtoValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 
 // Configure DB
 builder.Services.AddDbContext<OrdersDbContext>(options =>
