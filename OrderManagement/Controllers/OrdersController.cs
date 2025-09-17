@@ -1,0 +1,44 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using OrderManagement.Application.DTOs;
+using OrderManagement.Application.Interfaces;
+
+namespace OrderManagement.Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class OrdersController : ControllerBase
+    {
+        private readonly IOrderService _service;
+        public OrdersController(IOrderService service) => _service = service;
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var order = await _service.CreateOrderAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var order = await _service.GetOrderByIdAsync(id);
+            return order == null ? NotFound() : Ok(order);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> List()
+        {
+            var orders = await _service.ListOrdersAsync();
+            return Ok(orders);
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var order = await _service.UpdateOrderStatusAsync(id, dto);
+            return order == null ? NotFound() : Ok(order);
+        }
+    }
+}
