@@ -5,6 +5,7 @@ using OrderManagement.Domain.Entities;
 using OrderManagement.Domain.Enums;
 using OrderManagement.DTOs;
 using OrderManagement.Infrastructure.Repositories;
+using System.Globalization;
 
 namespace OrderManagement.Application.Services
 {
@@ -65,7 +66,7 @@ namespace OrderManagement.Application.Services
             _logger.LogInformation("Creating new order for customer {CustomerName}", dto.CustomerName);
 
 
-            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India S    tandard Time");
             var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
 
             var order = new Order
@@ -120,11 +121,39 @@ namespace OrderManagement.Application.Services
             return MapToDto(order);
         }
 
-        public async Task<List<OrderDetailsDto>> ListOrdersAsync()
+        public async Task<List<OrderDetailsDto>> ListOrdersAsync(string sortBy, bool desc)
         {
-            _logger.LogInformation("Fetching all orders");
-            var orders = await _repo.ListAsync();
-            return orders.Select(MapToDto).ToList();
+            //_logger.LogInformation("Fetching all orders");
+            //var orders = await _repo.ListAsync();
+            //return orders.Select(MapToDto).ToList();
+
+            _logger.LogInformation("Fetching orders sorted by {SortBy}, desc = {Desc}", sortBy, desc);
+
+            var orders = await _repo.ListAsync(); // returns IEnumerable<Order>
+
+            // Normalize column name
+            sortBy = (sortBy ?? "CreatedAt").Trim().ToLowerInvariant();
+
+            IEnumerable<Order> sorted = sortBy switch
+            {
+                "customername" => desc
+                    ? orders.OrderByDescending(o => o.CustomerName)
+                    : orders.OrderBy(o => o.CustomerName),
+
+                "updatedat" => desc
+                    ? orders.OrderByDescending(o => o.UpdatedAt)
+                    : orders.OrderBy(o => o.UpdatedAt),
+
+                "createdat" => desc
+                    ? orders.OrderByDescending(o => o.CreatedAt)
+                    : orders.OrderBy(o => o.CreatedAt),
+
+                _ => desc
+                    ? orders.OrderByDescending(o => o.CreatedAt) // default fallback
+                    : orders.OrderBy(o => o.CreatedAt)
+            };
+
+            return sorted.Select(MapToDto).ToList();
         }
 
         public async Task<OrderDetailsDto?> UpdateOrderStatusAsync(Guid id, UpdateOrderStatusDto dto)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderManagement.Application.DTOs;
 using OrderManagement.Application.Interfaces;
+using OrderManagement.Domain.Entities;
 using OrderManagement.DTOs;
 
 namespace OrderManagement.Api.Controllers
@@ -42,9 +43,16 @@ namespace OrderManagement.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List([FromQuery] string sortBy = "CreatedAt", [FromQuery] bool desc = true)
         {
-            var orders = await _service.ListOrdersAsync();
+            //var orders = await _service.ListOrdersAsync();
+
+            //var sorted = desc
+            //    ? orders.OrderByDescending(o => o.CreatedAt)
+            //    : orders.OrderBy(o => o.CreatedAt);
+
+            //return Ok(sorted);
+            var orders = await _service.ListOrdersAsync(sortBy, desc);
             return Ok(orders);
         }
 
