@@ -66,7 +66,7 @@ namespace OrderManagement.Application.Services
             _logger.LogInformation("Creating new order for customer {CustomerName}", dto.CustomerName);
 
 
-            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India S    tandard Time");
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
 
             var order = new Order
@@ -75,7 +75,7 @@ namespace OrderManagement.Application.Services
                 CustomerName = dto.CustomerName,
                 Notes = dto.Notes,
                 Status = OrderStatus.Pending,
-                CreatedAt = indiaTime,   // ✅ IST
+                CreatedAt = indiaTime,   
                 Items = dto.Items.Select(i => new OrderItem
                 {
                     Id = Guid.NewGuid(),
@@ -96,7 +96,7 @@ namespace OrderManagement.Application.Services
                 FromStatus = OrderStatus.Pending,
                 ToStatus = OrderStatus.Pending,
                 ChangedBy = dto.ChangedBy,
-                ChangedAt = DateTime.UtcNow,
+                ChangedAt = indiaTime,
                 Reason = dto.Reason
             };
 
@@ -149,7 +149,7 @@ namespace OrderManagement.Application.Services
                     : orders.OrderBy(o => o.CreatedAt),
 
                 _ => desc
-                    ? orders.OrderByDescending(o => o.CreatedAt) // default fallback
+                    ? orders.OrderByDescending(o => o.CreatedAt) 
                     : orders.OrderBy(o => o.CreatedAt)
             };
 
@@ -169,7 +169,10 @@ namespace OrderManagement.Application.Services
 
             var oldStatus = order.Status;
             order.Status = dto.NewStatus;
-            order.UpdatedAt = DateTime.UtcNow;
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
+
+            order.UpdatedAt = indiaTime;
 
             await _repo.UpdateAsync(order);
             _logger.LogInformation("Order {OrderId} status updated from {OldStatus} to {NewStatus}", id, oldStatus, dto.NewStatus);
@@ -182,8 +185,9 @@ namespace OrderManagement.Application.Services
                 ToStatus = dto.NewStatus,
                 ChangedBy = dto.ChangedBy,
                 Reason = dto.Reason,
-                ChangedAt = DateTime.UtcNow
+                ChangedAt = indiaTime  
             };
+
 
             await _repo.AddHistoryAsync(history);
             _logger.LogInformation("History entry for Order {OrderId} added by {ChangedBy}", order.Id, dto.ChangedBy);
