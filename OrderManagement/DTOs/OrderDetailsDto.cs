@@ -4,7 +4,7 @@ using OrderManagement.Domain.Enums;
 
 namespace OrderManagement.Application.DTOs
 {
-    public class OrderDetailsDto
+    public class OrderDetailsDto 
     {
         public Guid Id { get; set; }
         public string CustomerName { get; set; } = string.Empty;

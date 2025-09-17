@@ -17,7 +17,7 @@ namespace OrderManagement.Application.DTOs
     public class CreateOrderItemDto
     {
         [Required] public string ItemName { get; set; } = string.Empty;
-        [Range(1, int.MaxValue)] public int Quantity { get; set; }
+        [Range(1, int.MaxValue)] public int Quantity { get; set; } = 0;
         [Range(0, double.MaxValue)] public decimal UnitPrice { get; set; }
     }
 }

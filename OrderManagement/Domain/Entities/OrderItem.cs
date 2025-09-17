@@ -7,7 +7,7 @@ namespace OrderManagement.Domain.Entities
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
         public string ItemName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
+        public int Quantity { get; set; }= 0;
         public decimal UnitPrice { get; set; }
 
         public Order? Order { get; set; }

@@ -9,14 +9,23 @@ namespace OrderManagement.DTOs.Validators
         public CreateOrderDtoValidator()
         {
             RuleFor(x => x.CustomerName)
-                .NotEmpty().WithMessage("Customer name is required")
-                .MaximumLength(200);
+                .NotEmpty().WithMessage("Customer name is required.")
+                .Matches("^[a-zA-Z ]+$").WithMessage("Customer name must contain only letters and spaces.")
+                .MaximumLength(100).WithMessage("Customer name cannot exceed 100 characters.");
 
-            RuleForEach(x => x.Items).ChildRules(item =>
+            RuleFor(x => x.Items)
+                .NotEmpty().WithMessage("At least one order item is required.");
+
+            RuleForEach(x => x.Items).ChildRules(items =>
             {
-                item.RuleFor(i => i.ItemName).NotEmpty();
-                item.RuleFor(i => i.Quantity).GreaterThan(0);
-                item.RuleFor(i => i.UnitPrice).GreaterThanOrEqualTo(0);
+                items.RuleFor(i => i.ItemName)
+                    .NotEmpty().WithMessage("Item name is required.");
+
+                items.RuleFor(i => i.Quantity)
+                    .GreaterThan(0).WithMessage("Item quantity must be greater than zero.");
+
+                items.RuleFor(i => i.UnitPrice)
+                    .GreaterThan(0).WithMessage("Item unit price must be greater than zero.");
             });
         }
     }

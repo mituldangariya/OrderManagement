@@ -6,17 +6,39 @@ using OrderManagement.Application.Services;
 using OrderManagement.DTOs.Validators;
 using OrderManagement.Infrastructure.Persistence;
 using OrderManagement.Infrastructure.Repositories;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using OrderManagement.DTOs.Validators;
+using OrderManagement.Infrastructure.Converters;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add Controllers with JSON options + FluentValidation
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.Converters.Add(new StringJsonConverter());
+    });
 
-
-builder.Services.AddControllers();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderDtoValidator>();
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value?.Errors.Count > 0)
+            .SelectMany(e => e.Value!.Errors.Select(err => err.ErrorMessage))
+            .ToList();
+
+        return new BadRequestObjectResult(new
+        {
+            Title = "Validation Failed",
+            Status = StatusCodes.Status400BadRequest,
+            Errors = errors
+        });
+    };
+});
 
 // Configure DB
 builder.Services.AddDbContext<OrdersDbContext>(options =>
@@ -26,7 +48,6 @@ builder.Services.AddDbContext<OrdersDbContext>(options =>
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -40,5 +61,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseExceptionHandler("/error");
+
 app.MapControllers();
 app.Run();

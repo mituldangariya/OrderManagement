@@ -15,10 +15,24 @@ namespace OrderManagement.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            var order = await _service.CreateOrderAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
+            if (dto == null)
+                return BadRequest("Order data is missing.");
+
+            try
+            {
+                var order = await _service.CreateOrderAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = order.Id }, order);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
         }
+
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
